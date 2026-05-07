@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holiao Media — WhatsApp Sender</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00c853;
+    --green-dark: #009624;
+    --green-glow: rgba(0,200,83,0.18);
+    --bg: #0a0f0d;
+    --surface: #111a14;
+    --surface2: #172019;
+    --border: rgba(0,200,83,0.15);
+    --border-bright: rgba(0,200,83,0.4);
+    --text: #e8f5e9;
+    --text-dim: #7a9e82;
+    --text-muted: #3d5c42;
+    --danger: #ff5252;
+    --warn: #ffab40;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,200,83,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(0,200,83,0.05) 0%, transparent 60%);
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 28px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky; top: 0;
+    background: rgba(10,15,13,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo-mark {
+    width: 38px; height: 38px;
+    background: var(--green);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700;
+    font-weight: 800; font-size: 18px;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700;
+    font-weight: 700; font-size: 18px;
+    color: var(--text); letter-spacing: -0.3px;
+  }
+  .header-text p { font-size: 12px; color: var(--text-dim); }
+  .header-badge {
+    margin-left: auto;
+    background: var(--green-glow);
+    border: 1px solid var(--border-bright);
+    color: var(--green);
+    font-size: 11px; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    padding: 20px 40px 0;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 10px 20px;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700;
+    font-weight: 600; font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  /* ── MAIN LAYOUT ── */
+  .app { display: flex; height: calc(100vh - 117px); }
+
+  .panel {
+    padding: 28px 32px;
+    overflow-y: auto;
+  }
+  .panel::-webkit-scrollbar { width: 4px; }
+  .panel::-webkit-scrollbar-track { background: transparent; }
+  .panel::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+  .left-panel  { width: 420px; flex-shrink: 0; border-right: 1px solid var(--border); }
+  .right-panel { flex: 1; }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 12px; font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  input[type="text"], input[type="tel"], textarea, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"]:focus,
+  input[type="tel"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px var(--green-glow);
+  }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  select option { background: #1a2a1e; }
+
+  /* ── TEMPLATE CARDS ── */
+  .template-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .template-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .template-card:hover { border-color: var(--border-bright); background: var(--surface2); }
+  .template-card.active {
+    border-color: var(--green);
+    background: rgba(0,200,83,0.06);
+    box-shadow: 0 0 0 1px var(--green);
+  }
+  .template-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .template-info { flex: 1; min-width: 0; }
+  .template-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .template-sub  { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .template-check { color: var(--green); font-size: 16px; opacity: 0; transition: opacity 0.15s; }
+  .template-card.active .template-check { opacity: 1; }
+
+  /* ── AI HUMANISE TOGGLE ── */
+  .ai-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .ai-row-text .title { font-size: 13px; font-weight: 500; }
+  .ai-row-text .sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); border-color: var(--green); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: white; border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: 10px;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700; font-weight: 600; font-size: 14px;
+    cursor: pointer; border: none; transition: all 0.18s;
+    letter-spacing: 0.2px;
+  }
+  .btn-primary {
+    background: var(--green); color: #000;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #00e676; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,200,83,0.3); }
+  .btn-primary:disabled { background: var(--text-muted); color: var(--surface); cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    font-size: 12px; padding: 8px 14px;
+  }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+  .btn-danger {
+    background: transparent;
+    border: 1px solid rgba(255,82,82,0.3);
+    color: var(--danger);
+    font-size: 12px; padding: 8px 14px;
+  }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .preview-actions { display: flex; gap: 8px; }
+
+  .phone-mockup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 380px;
+    margin: 0 auto 24px;
+  }
+  .chat-header {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .chat-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #00695c);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #000;
+    flex-shrink: 0;
+  }
+  .chat-name { font-size: 14px; font-weight: 500; }
+  .chat-status { font-size: 11px; color: var(--green); }
+  .message-bubble {
+    background: #1a3320;
+    border: 1px solid rgba(0,200,83,0.12);
+    border-radius: 4px 16px 16px 16px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+  }
+  .message-time {
+    font-size: 10px; color: var(--text-muted);
+    text-align: right; margin-top: 6px;
+  }
+
+  /* AI badge */
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(0,200,83,0.1);
+    border: 1px solid var(--border-bright);
+    color: var(--green);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .ai-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── SEND ROW ── */
+  .send-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .send-row label { margin-bottom: 8px; }
+  .phone-input-row { display: flex; gap: 8px; }
+  .phone-prefix {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px; color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .phone-input-row input { flex: 1; }
+
+  /* ── LOG TABLE ── */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .log-table th {
+    text-align: left; padding: 8px 12px;
+    color: var(--text-muted); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .log-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,200,83,0.06);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  .log-table tr:hover td { background: rgba(0,200,83,0.03); }
+  .status-pill {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500;
+  }
+  .status-sent     { background: rgba(0,200,83,0.12); color: var(--green); }
+  .status-pending  { background: rgba(255,171,64,0.12); color: var(--warn); }
+  .status-skipped  { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+  /* ── CUSTOM TEMPLATES TAB ── */
+  .custom-template-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .custom-template-card .ct-name {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .custom-template-card .ct-preview {
+    font-size: 12px; color: var(--text-dim);
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    line-height: 1.5;
+  }
+  .ct-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; }
+  .ct-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; }
+
+  .add-template-form {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .add-template-form h3 {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif; font-weight: 700;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 14px; color: var(--green);
+  }
+
+  .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── TABS CONTENT ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: flex; width: 100%; }
+  #tab-templates-content { display: none; flex-direction: column; width: 100%; padding: 28px 40px; }
+  #tab-templates-content.active { display: flex; }
+  #tab-log-content { display: none; flex-direction: column; width: 100%; padding: 28px 40px; }
+  #tab-log-content.active { display: flex; }
+
+  .loading-spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── FADE IN ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">H</div>
+  <div class="header-text">
+    <h1>Holiao Media</h1>
+    <p>WhatsApp Outreach Sender</p>
+  </div>
+  <div class="header-badge">● LIVE</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('compose')">✦ Compose</div>
+  <div class="tab" onclick="switchTab('templates')">◈ Templates</div>
+  <div class="tab" onclick="switchTab('log')">◎ Send Log</div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: COMPOSE -->
+<!-- ═══════════════════════════════════════ -->
+<div id="tab-compose-content" class="tab-content active">
+  <div class="app">
+
+    <!-- LEFT: INPUTS -->
+    <div class="panel left-panel">
+
+      <!-- Template Picker -->
+      <div class="section-label">Choose Template</div>
+      <div class="template-grid" id="templateGrid"></div>
+
+      <div class="divider"></div>
+
+      <!-- Lead Details -->
+      <div class="section-label">Lead Details</div>
+      <div class="field">
+        <label>Business Name / 公司名称</label>
+        <input type="text" id="businessName" placeholder="e.g. Kedai Emas Lim, Penang" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <label>Area / Location / 地区</label>
+        <input type="text" id="area" placeholder="e.g. Georgetown, Penang" oninput="updatePreview()">
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- AI Humanise -->
+      <div class="ai-row">
+        <div class="ai-row-text">
+          <div class="title">✦ AI Humanise</div>
+          <div class="sub">Makes message sound natural, not robotic</div>
+        </div>
+        <div class="toggle" id="aiToggle" onclick="toggleAI()"></div>
+      </div>
+
+      <!-- Send -->
+      <div class="send-row">
+        <label>Phone Number / 手机号码</label>
+        <div class="phone-input-row">
+          <div class="phone-prefix">+60</div>
+          <input type="tel" id="phoneNumber" placeholder="123456789" oninput="updatePreview()">
+        </div>
+        <p class="hint" style="margin-top:8px">Malaysian number — no spaces or dashes</p>
+      </div>
+
+      <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">
+        <span id="sendBtnText">Open WhatsApp & Send</span>
+      </button>
+
+    </div>
+
+    <!-- RIGHT: PREVIEW -->
+    <div class="panel right-panel">
+      <div class="preview-header">
+        <div>
+          <div class="section-label">Message Preview</div>
+        </div>
+        <div class="preview-actions">
+          <button class="btn btn-outline" onclick="copyMessage()">⊕ Copy</button>
+          <button class="btn btn-outline" onclick="regenerateAI()">↻ Regenerate</button>
+        </div>
+      </div>
+
+      <div id="aiBadge" class="ai-badge" style="display:none">
+        <span class="ai-dot"></span> AI HUMANISED
+      </div>
+
+      <div class="phone-mockup">
+        <div class="chat-header">
+          <div class="chat-avatar" id="chatAvatar">?</div>
+          <div>
+            <div class="chat-name" id="chatName">Select a lead</div>
+            <div class="chat-status">online</div>
+          </div>
+        </div>
+        <div class="message-bubble" id="messagePreview">
+          Fill in the details on the left to preview your message here.
+        </div>
+        <div class="message-time" id="messageTime">—</div>
+      </div>
+
+      <div style="max-width:380px;margin:0 auto">
+        <div class="section-label">Quick Edit</div>
+        <textarea id="quickEdit" rows="6" placeholder="You can edit the message directly here before sending..."
+          oninput="syncFromEdit()"></textarea>
+        <p class="hint">Changes here will reflect in the preview above.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: TEMPLATES -->
+<!-- ═══════════════════════════════════════ -->
+<div id="tab-templates-content" class="tab-content">
+
+  <div style="max-width:700px;width:100%">
+    <div class="add-template-form fade-up">
+      <h3>+ Add Custom Template / 添加模板</h3>
+      <div class="field">
+        <label>Template Name / 模板名称</label>
+        <input type="text" id="ctName" placeholder="e.g. Chinese New Year Promo">
+      </div>
+      <div class="field">
+        <label>Icon (emoji) / 图标</label>
+        <input type="text" id="ctIcon" placeholder="🎊" style="width:80px">
+      </div>
+      <div class="field">
+        <label>Message / 消息内容</label>
+        <textarea id="ctMessage" rows="6"
+          placeholder="Use {business_name} and {area} as placeholders.&#10;&#10;Example:&#10;Hi {business_name}! 👋 We noticed your shop in {area}..."></textarea>
+        <p class="hint">Use <strong style="color:var(--green)">{business_name}</strong> and <strong style="color:var(--green)">{area}</strong> as placeholders — they'll be filled in when you send.</p>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" style="width:auto;padding:10px 24px" onclick="saveCustomTemplate()">Save Template</button>
+        <button class="btn btn-outline" onclick="loadFromFile()">↑ Load from File</button>
+        <input type="file" id="fileInput" accept=".txt,.csv" style="display:none" onchange="handleFileLoad(event)">
+      </div>
+    </div>
+
+    <div class="section-label">Your Custom Templates / 自定义模板</div>
+    <div id="customTemplateList"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB: LOG -->
+<!-- ═══════════════════════════════════════ -->
+<div id="tab-log-content" class="tab-content">
+  <div style="width:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="section-label" style="margin:0">Send History / 发送记录</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="exportLog()">↓ Export CSV</button>
+        <button class="btn btn-danger" onclick="clearLog()">✕ Clear Log</button>
+      </div>
+    </div>
+    <div id="logContainer"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+const BUILT_IN_TEMPLATES = [
+  {
+    id: 'cold_intro',
+    icon: '👋',
+    name: 'Cold Intro',
+    subname: '初次联系',
+    message: `Hi {business_name}! 👋
+
+I'm June from Holiao Media — we help businesses like yours grow online with content & digital marketing.
+
+Noticed {business_name} has a great presence in {area}. Just wanted to share — many local businesses have seen real results within 30 days. 🚀
+
+Mind if I share more details? Takes less than 5 minutes! 😊
+
+我是来自 Holiao Media 的 June。我们专门帮助 {area} 的本地商家通过数字营销快速成长。有兴趣聊聊吗？`
+  },
+  {
+    id: 'follow_up',
+    icon: '🔔',
+    name: 'Follow-Up',
+    subname: '跟进消息',
+    message: `Hi {business_name}! 😊
+
+Just a friendly follow-up from Holiao Media — totally understand everyone's busy!
+
+Wanted to make sure my message got through. If you have a moment, I'd love to chat about how we can support {business_name}'s growth in {area}.
+
+No pressure at all — just let me know! 🙏
+
+没有回应也没关系 — 只是想确认消息有收到。有空的话聊聊吧！`
+  },
+  {
+    id: 'event_promo',
+    icon: '🎉',
+    name: 'Promo Announcement',
+    subname: '促销通知',
+    message: `Great news for {business_name}! 🎉
+
+Holiao Media is running a *special promotion* for businesses in {area} — digital marketing packages at very competitive rates.
+
+📅 Limited time — 7 days only!
+✅ Social media content
+✅ Lead generation
+✅ Monthly performance reports
+
+Don't miss this! Reply now for details. 💬
+
+{business_name} 注意了！我们正在为 {area} 的商家推出限时优惠套餐，名额有限！`
+  },
+  {
+    id: 'partnership',
+    icon: '🤝',
+    name: 'Partnership Pitch',
+    subname: '合作提案',
+    message: `Hi {business_name}, greetings from Holiao Media! 🤝
+
+We've been following your brand's growth in {area} — and honestly, we see a really exciting opportunity here.
+
+We specialise in content production & digital growth, and we'd love to explore a collab that benefits both our audiences.
+
+Open to a quick 15-min call this week? Happy to work around your schedule. 😊
+
+我们很欣赏 {business_name} 在 {area} 的发展，希望能探讨合作机会！`
+  }
+];
+
+let state = {
+  selectedTemplate: null,
+  currentMessage: '',
+  aiOn: false,
+  aiGenerating: false,
+  customTemplates: JSON.parse(localStorage.getItem('hm_custom_templates') || '[]'),
+  sendLog: JSON.parse(localStorage.getItem('hm_send_log') || '[]'),
+};
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+function init() {
+  renderTemplateGrid();
+  renderCustomTemplates();
+  renderLog();
+  updateTime();
+  setInterval(updateTime, 60000);
+}
+
+function updateTime() {
+  const now = new Date();
+  document.getElementById('messageTime').textContent =
+    now.toLocaleTimeString('en-MY', {hour:'2-digit',minute:'2-digit'});
+}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['compose','templates','log'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  ['compose','templates','log'].forEach(t => {
+    const el = document.getElementById(`tab-${t}-content`);
+    el.classList.toggle('active', t === tab);
+  });
+  if (tab === 'log') renderLog();
+}
+
+// ═══════════════════════════════════
+// TEMPLATE GRID
+// ═══════════════════════════════════
+function renderTemplateGrid() {
+  const grid = document.getElementById('templateGrid');
+  const all = [...BUILT_IN_TEMPLATES, ...state.customTemplates.map(t => ({...t, custom: true}))];
+  grid.innerHTML = all.map(t => `
+    <div class="template-card ${state.selectedTemplate?.id === t.id ? 'active' : ''}"
+         onclick="selectTemplate('${t.id}')">
+      <div class="template-icon">${t.icon || '💬'}</div>
+      <div class="template-info">
+        <div class="template-name">${t.name} ${t.custom ? '<span style="font-size:10px;color:var(--green);background:var(--green-glow);padding:1px 6px;border-radius:8px;margin-left:4px">Custom</span>' : ''}</div>
+        <div class="template-sub">${t.subname || ''}</div>
+      </div>
+      <div class="template-check">✓</div>
+    </div>
+  `).join('');
+}
+
+function selectTemplate(id) {
+  const all = [...BUILT_IN_TEMPLATES, ...state.customTemplates];
+  state.selectedTemplate = all.find(t => t.id === id);
+  renderTemplateGrid();
+  updatePreview();
+}
+
+// ═══════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════
+function updatePreview() {
+  const business = document.getElementById('businessName').value.trim();
+  const area     = document.getElementById('area').value.trim();
+
+  // Update avatar
+  const avatar = document.getElementById('chatAvatar');
+  const name   = document.getElementById('chatName');
+  if (business) {
+    avatar.textContent = business.charAt(0).toUpperCase();
+    name.textContent   = business;
+  } else {
+    avatar.textContent = '?';
+    name.textContent   = 'Select a lead';
+  }
+
+  if (!state.selectedTemplate) {
+    setPreviewText('Choose a template on the left to get started. 选择一个模板开始。');
+    return;
+  }
+
+  const msg = state.selectedTemplate.message
+    .replace(/{business_name}/g, business || '{business_name}')
+    .replace(/{area}/g, area || '{area}');
+
+  state.currentMessage = msg;
+  setPreviewText(msg);
+  document.getElementById('quickEdit').value = msg;
+}
+
+function setPreviewText(text) {
+  document.getElementById('messagePreview').textContent = text;
+}
+
+function syncFromEdit() {
+  const txt = document.getElementById('quickEdit').value;
+  state.currentMessage = txt;
+  document.getElementById('messagePreview').textContent = txt;
+}
+
+// ═══════════════════════════════════
+// AI TOGGLE
+// ═══════════════════════════════════
+function toggleAI() {
+  state.aiOn = !state.aiOn;
+  document.getElementById('aiToggle').classList.toggle('on', state.aiOn);
+  document.getElementById('aiBadge').style.display = state.aiOn ? 'inline-flex' : 'none';
+  if (state.aiOn) {
+    showToast('✦ AI Humanise ON — will personalise before sending');
+  }
+}
+
+async function regenerateAI() {
+  const business = document.getElementById('businessName').value.trim();
+  const area     = document.getElementById('area').value.trim();
+  if (!state.selectedTemplate || !business) {
+    showToast('⚠ Fill in business name first');
+    return;
+  }
+
+  const btn = document.querySelector('.preview-actions .btn-outline:last-child');
+  btn.textContent = '↻ Generating...';
+  btn.disabled = true;
+
+  try {
+    const result = await callClaudeAPI(state.currentMessage, business, area);
+    state.currentMessage = result;
+    setPreviewText(result);
+    document.getElementById('quickEdit').value = result;
+    document.getElementById('aiBadge').style.display = 'inline-flex';
+    showToast('✦ AI message generated!');
+  } catch(e) {
+    showToast('❌ AI error — using original template');
+  }
+
+  btn.textContent = '↻ Regenerate';
+  btn.disabled = false;
+}
+
+async function callClaudeAPI(baseMsg, business, area) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 600,
+      messages: [{
+        role: 'user',
+        content: `You are a WhatsApp outreach specialist for Holiao Media, a digital marketing agency in Malaysia.
+
+Rewrite this WhatsApp message to sound more human, warm, and personal for:
+- Business: ${business}
+- Location: ${area}
+
+Rules:
+1. Casual WhatsApp tone — like a real person texting, not a company blast
+2. Keep English + Mandarin bilingual structure (English main, Mandarin summary at end)
+3. Same length — don't make it longer
+4. Keep emojis, keep the CTA
+5. Make it feel written specifically for ${business}, not copy-paste
+6. Output ONLY the final message — no explanation, no preamble
+
+Original:
+${baseMsg}`
+      }]
+    })
+  });
+  const data = await resp.json();
+  return data.content[0].text.trim();
+}
+
+// ═══════════════════════════════════
+// SEND
+// ═══════════════════════════════════
+async function sendMessage() {
+  const business = document.getElementById('businessName').value.trim();
+  const area     = document.getElementById('area').value.trim();
+  const phone    = document.getElementById('phoneNumber').value.trim().replace(/\D/g,'');
+
+  if (!state.selectedTemplate) { showToast('⚠ Please select a template'); return; }
+  if (!business)  { showToast('⚠ Enter business name'); return; }
+  if (!phone)     { showToast('⚠ Enter phone number'); return; }
+
+  const btn     = document.getElementById('sendBtn');
+  const btnText = document.getElementById('sendBtnText');
+
+  let finalMsg = state.currentMessage || document.getElementById('quickEdit').value;
+
+  // AI humanise if on
+  if (state.aiOn && !state.aiGenerating) {
+    state.aiGenerating = true;
+    btnText.innerHTML = '<span class="loading-spinner"></span> AI Humanising...';
+    btn.disabled = true;
+    try {
+      finalMsg = await callClaudeAPI(finalMsg, business, area);
+      state.currentMessage = finalMsg;
+      setPreviewText(finalMsg);
+      document.getElementById('quickEdit').value = finalMsg;
+      document.getElementById('aiBadge').style.display = 'inline-flex';
+    } catch(e) {
+      showToast('⚠ AI failed — sending original');
+    }
+    state.aiGenerating = false;
+  }
+
+  // Open WhatsApp Web
+  const fullPhone  = '60' + phone;
+  const encodedMsg = encodeURIComponent(finalMsg);
+  const url        = `https://wa.me/${fullPhone}?text=${encodedMsg}`;
+  window.open(url, '_blank');
+
+  // Log it
+  const entry = {
+    timestamp: new Date().toLocaleString('en-MY'),
+    business, area,
+    phone: '+60' + phone,
+    template: state.selectedTemplate.name,
+    aiUsed: state.aiOn ? 'Yes' : 'No',
+    status: 'sent',
+    message: finalMsg
+  };
+  state.sendLog.unshift(entry);
+  localStorage.setItem('hm_send_log', JSON.stringify(state.sendLog));
+
+  showToast('✅ WhatsApp Web opened — click Send!');
+  btnText.textContent = 'Open WhatsApp & Send';
+  btn.disabled = false;
+}
+
+function copyMessage() {
+  const msg = state.currentMessage || document.getElementById('quickEdit').value;
+  if (!msg || msg.includes('Fill in the details')) { showToast('⚠ Nothing to copy'); return; }
+  navigator.clipboard.writeText(msg).then(() => showToast('📋 Copied to clipboard!'));
+}
+
+// ═══════════════════════════════════
+// CUSTOM TEMPLATES
+// ═══════════════════════════════════
+function saveCustomTemplate() {
+  const name = document.getElementById('ctName').value.trim();
+  const icon = document.getElementById('ctIcon').value.trim() || '💬';
+  const msg  = document.getElementById('ctMessage').value.trim();
+  if (!name || !msg) { showToast('⚠ Name and message required'); return; }
+
+  const tpl = {
+    id: 'custom_' + Date.now(),
+    icon, name, subname: '自定义', message: msg, custom: true
+  };
+  state.customTemplates.push(tpl);
+  localStorage.setItem('hm_custom_templates', JSON.stringify(state.customTemplates));
+
+  document.getElementById('ctName').value = '';
+  document.getElementById('ctIcon').value = '';
+  document.getElementById('ctMessage').value = '';
+
+  renderCustomTemplates();
+  renderTemplateGrid();
+  showToast('✅ Template saved!');
+}
+
+function deleteCustomTemplate(id) {
+  state.customTemplates = state.customTemplates.filter(t => t.id !== id);
+  localStorage.setItem('hm_custom_templates', JSON.stringify(state.customTemplates));
+  renderCustomTemplates();
+  renderTemplateGrid();
+  showToast('Template deleted');
+}
+
+function useCustomTemplate(id) {
+  selectTemplate(id);
+  switchTab('compose');
+  showToast('✅ Template selected — go compose!');
+}
+
+function renderCustomTemplates() {
+  const el = document.getElementById('customTemplateList');
+  if (state.customTemplates.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">◈</div><p>No custom templates yet.<br>Add one above!</p></div>`;
+    return;
+  }
+  el.innerHTML = state.customTemplates.map(t => `
+    <div class="custom-template-card">
+      <div class="ct-actions">
+        <button class="ct-btn" onclick="useCustomTemplate('${t.id}')" title="Use">✦</button>
+        <button class="ct-btn" style="color:var(--danger)" onclick="deleteCustomTemplate('${t.id}')" title="Delete">✕</button>
+      </div>
+      <div class="ct-name">${t.icon} ${t.name}</div>
+      <div class="ct-preview">${t.message}</div>
+    </div>
+  `).join('');
+}
+
+function loadFromFile() { document.getElementById('fileInput').click(); }
+
+function handleFileLoad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    document.getElementById('ctMessage').value = content;
+    document.getElementById('ctName').value = file.name.replace(/\.[^.]+$/, '');
+    showToast('📄 File loaded — review and save!');
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════════════════════════
+// SEND LOG
+// ═══════════════════════════════════
+function renderLog() {
+  const el = document.getElementById('logContainer');
+  if (state.sendLog.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">◎</div><p>No messages sent yet.<br>Go send your first one!</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table class="log-table">
+      <thead><tr>
+        <th>Time</th><th>Business</th><th>Area</th>
+        <th>Phone</th><th>Template</th><th>AI</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${state.sendLog.map(r => `
+          <tr>
+            <td>${r.timestamp}</td>
+            <td style="color:var(--text)">${r.business}</td>
+            <td>${r.area}</td>
+            <td>${r.phone}</td>
+            <td>${r.template}</td>
+            <td>${r.aiUsed === 'Yes' ? '<span style="color:var(--green)">✦ Yes</span>' : '—'}</td>
+            <td><span class="status-pill status-${r.status}">${r.status}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function exportLog() {
+  if (state.sendLog.length === 0) { showToast('⚠ No log to export'); return; }
+  const headers = ['Timestamp','Business','Area','Phone','Template','AI Used','Status'];
+  const rows    = state.sendLog.map(r =>
+    [r.timestamp, r.business, r.area, r.phone, r.template, r.aiUsed, r.status]
+    .map(v => `"${v}"`).join(',')
+  );
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `holiao_send_log_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('📥 Log exported!');
+}
+
+function clearLog() {
+  if (!confirm('Clear all send history? This cannot be undone.')) return;
+  state.sendLog = [];
+  localStorage.setItem('hm_send_log', '[]');
+  renderLog();
+  showToast('Log cleared');
+}
+
+// ═══════════════════════════════════
+// TOAST
+// ═══════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════
+// START
+// ═══════════════════════════════════
+init();
+</script>
+</body>
+</html>
